@@ -34,8 +34,10 @@ describe Caffeinate::ActionMailer::Interceptor do
 
       before do
         campaign.to_dripper.drip :hello, mailer_class: 'ArgumentMailer', delay: 0.hours
+        campaign.to_dripper.instance_variable_set(:@before_send_called, nil)
+
         campaign.to_dripper.before_send do
-          @@before_send_called = true
+          campaign.to_dripper.instance_variable_set(:@before_send_called, true)
         end
       end
 
@@ -47,7 +49,7 @@ describe Caffeinate::ActionMailer::Interceptor do
       it 'runs before_send callbacks' do
         mail.caffeinate_mailing = mailing
         described_class.delivering_email(mail)
-        expect(campaign.to_dripper).to be_class_variable_defined(:@@before_send_called)
+        expect(campaign.to_dripper.instance_variable_get(:@before_send_called)).to be_truthy
       end
 
       it 'sets performed_deliveries to the result of the evaluator' do

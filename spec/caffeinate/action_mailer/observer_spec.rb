@@ -28,15 +28,16 @@ describe Caffeinate::ActionMailer::Observer do
 
       before do
         campaign.to_dripper.drip :hello, mailer_class: 'ArgumentMailer', delay: 0.hours
+        campaign.to_dripper.instance_variable_set(:@after_send_called, nil)
         campaign.to_dripper.after_send do
-          @@after_send_called = true
+          campaign.to_dripper.instance_variable_set(:@after_send_called, true)
         end
       end
 
       it 'runs before_send callbacks' do
         mail.caffeinate_mailing = mailing
         described_class.delivered_email(mail)
-        expect(campaign.to_dripper).to be_class_variable_defined(:@@after_send_called)
+        expect(campaign.to_dripper.instance_variable_get(:@after_send_called)).to be_truthy
       end
 
       it 'updates mailing to the current time' do
